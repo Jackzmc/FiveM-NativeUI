@@ -1,7 +1,7 @@
 import BadgeStyle from "../enums/BadgeStyle";
 import Font from "../enums/Font";
 import Alignment from "../enums/Alignment";
-import NativeUI from "../NativeUi";
+import Menu from "../menus/Menu.js";
 import ResRectangle from "../modules/ResRectangle";
 import ResText from "../modules/ResText";
 import Sprite from "../modules/Sprite";
@@ -55,7 +55,7 @@ export default class UIMenuItem {
     public Data: any;
 
     public Offset: Point;
-    public Parent: NativeUI;
+    public Parent: Menu;
 
     public get Text() {
         return this._text.Caption;
