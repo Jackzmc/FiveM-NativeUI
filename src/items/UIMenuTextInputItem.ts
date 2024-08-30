@@ -8,7 +8,7 @@ export default class UIMenuTextInputItem extends UIMenuItem {
     public MaxLength: number
 
     constructor( label: string, description: string = "", maxLength = 30, defaultValue?: string ) {
-        super( label, description + "\nClick to change value" );
+        super( label, description + "\n\nClick to change value" );
 
         this.textValue = defaultValue
         this.RightLabel = this.textValue

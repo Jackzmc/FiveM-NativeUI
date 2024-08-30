@@ -550,7 +550,7 @@ export default class NativeUI {
             Common.PlaySound(this.AUDIO_SELECT, this.AUDIO_LIBRARY);
             this.Emit("checkboxChange", it, it.Checked)
         } if ( it instanceof UIMenuTextInputItem ) {
-            getTextInput( it.MaxLength ).then( text => {
+            getTextInput( it.MaxLength, it.Text ).then( text => {
                 it.Text = text
                 it.Emit( "input", text )
             })

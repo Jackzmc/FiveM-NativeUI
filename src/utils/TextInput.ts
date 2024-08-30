@@ -1,5 +1,5 @@
-export async function getTextInput(maxLength?: number): Promise<string> {
-    DisplayOnscreenKeyboard( 1, "FMMC_MPM_NA", "", "", "", "", "", maxLength );
+export async function getTextInput(maxLength?: number, defaultValue = ""): Promise<string> {
+    DisplayOnscreenKeyboard( 1, "FMMC_MPM_NA", "", defaultValue, "", "", "", maxLength );
     let state = UpdateOnscreenKeyboard()
     while ( state === 0 ) {
         state = UpdateOnscreenKeyboard();
