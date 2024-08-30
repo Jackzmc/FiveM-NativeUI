@@ -12,7 +12,7 @@ export default class ItemsCollection {
 		return this.items.length;
 	}
 
-	public getListItems() {
+	public getListItems(): ListItem[] {
 		const items = [];
 		for (const item of this.items) {
 			if (item instanceof ListItem) {
