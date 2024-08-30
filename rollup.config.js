@@ -5,7 +5,7 @@ import {terser} from "rollup-plugin-terser";
 const input = resolve(__dirname, "src/NativeUi.ts");
 
 const file = () => {
-    const path = `dist/nativeui/nativeui.js`
+    const path = `dist/nativeui/NativeUi.js`
     return {
         file: resolve(__dirname, path),
         name: "NativeUI",
