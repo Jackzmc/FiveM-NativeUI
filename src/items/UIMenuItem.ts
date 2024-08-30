@@ -9,10 +9,19 @@ import Color from "../utils/Color";
 import Point from "../utils/Point";
 import Size from "../utils/Size";
 import UUIDV4 from "../utils/UUIDV4";
+import ChangeDirection from '../../dist/nativeui/enums/ChangeDirection';
 
 export type ItemEvents = {
+    // When the menu item is selected
     select: () => void,
-    hovered: ( active: boolean ) => void,
+    // When the menu item is the currently selected in the menu
+    focus: () => void,
+    // When the selected item changes away
+    blur: () => void,
+    // When a different item is chosen in a list item
+    itemChange: ( direction: ChangeDirection, item: any ) => void,
+    // When a the list item is selected (select fires as well)
+    // itemSelect: ( item: any ) => void,
     input: ( text: string ) => void,
 }
 

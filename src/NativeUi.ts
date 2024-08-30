@@ -449,93 +449,50 @@ export default class NativeUI {
         this.Emit("close", true)
     }
 
-    public GoLeft() {
-        if (!(this.MenuItems[this.CurrentSelection] instanceof UIMenuListItem) &&
-            !(this.MenuItems[this.CurrentSelection] instanceof UIMenuAutoListItem) &&
-            !(this.MenuItems[this.CurrentSelection] instanceof UIMenuDynamicListItem) &&
-            !(this.MenuItems[this.CurrentSelection] instanceof UIMenuSliderItem) ||
-            !this.MenuItems[this.CurrentSelection].Enabled)
-            return;
-
-        if (this.MenuItems[this.CurrentSelection] instanceof UIMenuListItem) {
-            const it = <UIMenuListItem>this.MenuItems[this.CurrentSelection];
-            if (it.Collection.length == 0) return;
-            it.Index--;
-            Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
-            this.Emit("listChange", it, it.Index)
-            this.UpdateDescriptionCaption();
-        }
-        else if (this.MenuItems[this.CurrentSelection] instanceof UIMenuAutoListItem) {
-            const it = <UIMenuAutoListItem>this.MenuItems[this.CurrentSelection];
-            if (it.SelectedValue <= it.LowerThreshold) {
+    public GoSideway( direction: ChangeDirection ) {
+        const it = this.MenuItems[this.CurrentSelection]
+        if ( !it.Enabled ) return
+        if ( it instanceof UIMenuListItem ) {
+            if ( it.Collection.length == 0 ) return;
+            it.Index += direction == ChangeDirection.Right ? 1 : -1;
+            it.Emit( "itemChange", direction, it.Index )
+            this.Emit( "listChange", it, it.Index )
+        } else if ( it instanceof UIMenuAutoListItem ) {
+            if(direction == ChangeDirection.Left)
+                it.SelectedValue -= it.LeftMoveThreshold
+            else 
+                it.SelectedValue += it.RightMoveThreshold
+            // Wrap around:
+            if ( it.SelectedValue <= it.LowerThreshold ) {
                 it.SelectedValue = it.UpperThreshold;
-            } else {
-                it.SelectedValue -= it.LeftMoveThreshold;
+            } else if(it.SelectedValue >= it.UpperThreshold) {
+                it.SelectedValue = it.LowerThreshold;
             }
-            Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
-            this.Emit("autoListChange", it, it.SelectedValue, ChangeDirection.Left)
-            this.UpdateDescriptionCaption();
+
+            this.Emit( "autoListChange", it, it.SelectedValue, direction );
+            it.Emit( "itemChange", direction, it.SelectedValue )
+        } else if ( it instanceof UIMenuDynamicListItem ) {
+            it.SelectionChangeHandlerPromise( it, it.SelectedValue, direction )
+                .then( ( newSelectedValue: string ) => {
+                    it.SelectedValue = newSelectedValue;
+                    it.Emit( "itemChange", direction, it.SelectedValue )
+                    this.Emit( "dynamicListChange", it, it.SelectedValue, ChangeDirection.Left );
+                } );
+        } else if ( it instanceof UIMenuSliderItem ) {
+            it.Index += direction == ChangeDirection.Right ? 1 : -1;
+            this.Emit( "sliderChange", it, it.Index, it.IndexToItem( it.Index ) )
+            it.Emit( "itemChange", direction, it.IndexToItem( it.Index ) )
         }
-        else if (this.MenuItems[this.CurrentSelection] instanceof UIMenuDynamicListItem) {
-            const it = <UIMenuDynamicListItem>this.MenuItems[this.CurrentSelection];
-            it.SelectionChangeHandlerPromise(it, it.SelectedValue, ChangeDirection.Left).then((newSelectedValue: string) => {
-                it.SelectedValue = newSelectedValue;
-                this.Emit("dynamicListChange", it, it.SelectedValue, ChangeDirection.Left)
-            });
-            Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
-            this.UpdateDescriptionCaption();
-        }
-        else if (this.MenuItems[this.CurrentSelection] instanceof UIMenuSliderItem) {
-            const it = <UIMenuSliderItem>this.MenuItems[this.CurrentSelection];
-            it.Index = it.Index - 1;
-            Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
-            this.Emit("sliderChange", it, it.Index, it.IndexToItem(it.Index))
-            this.UpdateDescriptionCaption();
-        }
+        Common.PlaySound( this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY );
+        this.UpdateDescriptionCaption();
+    }
+
+    public GoLeft() {
+        this.GoSideway(ChangeDirection.Left)
     }
 
     public GoRight() {
-        if (!(this.MenuItems[this.CurrentSelection] instanceof UIMenuListItem) &&
-            !(this.MenuItems[this.CurrentSelection] instanceof UIMenuAutoListItem) &&
-            !(this.MenuItems[this.CurrentSelection] instanceof UIMenuDynamicListItem) &&
-            !(this.MenuItems[this.CurrentSelection] instanceof UIMenuSliderItem) ||
-            !this.MenuItems[this.CurrentSelection].Enabled)
-            return;
-        if (this.MenuItems[this.CurrentSelection] instanceof UIMenuListItem) {
-            const it = <UIMenuListItem>this.MenuItems[this.CurrentSelection];
-            if (it.Collection.length == 0) return;
-            it.Index++;
-            Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
-            this.Emit("listChange", it, it.Index)
-            this.UpdateDescriptionCaption();
-        }
-        else if (this.MenuItems[this.CurrentSelection] instanceof UIMenuAutoListItem) {
-            const it = <UIMenuAutoListItem>this.MenuItems[this.CurrentSelection];
-            if (it.SelectedValue >= it.UpperThreshold) {
-                it.SelectedValue = it.LowerThreshold;
-            } else {
-                it.SelectedValue += it.RightMoveThreshold;
-            }
-            Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
-            this.Emit( "autoListChange", it, it.SelectedValue, ChangeDirection.Right );
-            this.UpdateDescriptionCaption();
-        }
-        else if (this.MenuItems[this.CurrentSelection] instanceof UIMenuDynamicListItem) {
-            const it = <UIMenuDynamicListItem>this.MenuItems[this.CurrentSelection];
-            it.SelectionChangeHandlerPromise(it, it.SelectedValue, ChangeDirection.Right).then((newSelectedValue: string) => {
-                it.SelectedValue = newSelectedValue;
-                this.Emit( "dynamicListChange", it, it.SelectedValue, ChangeDirection.Right );
-            });
-            Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
-            this.UpdateDescriptionCaption();
-        }
-        else if (this.MenuItems[this.CurrentSelection] instanceof UIMenuSliderItem) {
-            const it = <UIMenuSliderItem>this.MenuItems[this.CurrentSelection];
-            it.Index++;
-            Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
-            this.Emit( "sliderChange", it, it.Index, it.IndexToItem( it.Index ) )
-            this.UpdateDescriptionCaption();
-        }
+        this.GoSideway( ChangeDirection.Right )
     }
 
     public SelectItem() {
@@ -558,7 +515,10 @@ export default class NativeUI {
         } else {
             Common.PlaySound(this.AUDIO_SELECT, this.AUDIO_LIBRARY);
             this.Emit( "select", it, this.CurrentSelection )
-            it.Emit("select")
+            it.Emit( "select" )
+            // if ( it instanceof UIMenuAutoListItem || it instanceof UIMenuDynamicListItem || it instanceof UIMenuListItem) {
+            //     it.Emit("itemSelect", )
+            // }
             if (this.Children.has(it.Id)) {
                 const subMenu = this.Children.get(it.Id);
                 this.Visible = false;
@@ -825,8 +785,9 @@ export default class NativeUI {
         activeItem.Selected = true;
         Common.PlaySound(this.AUDIO_UPDOWN, this.AUDIO_LIBRARY);
         this.Emit( "indexChange", this.CurrentSelection, activeItem );
-        prevItem.Emit("hovered", false)
-        activeItem.Emit("hovered", true)
+        prevItem.Emit("blur")
+        activeItem.Emit("focus")
+        
         this.UpdateDescriptionCaption();
     }
 
