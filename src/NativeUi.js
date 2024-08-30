@@ -28,6 +28,7 @@ import BigMessage from './modules/BigMessage';
 import MidsizedMessage from './modules/MidsizedMessage';
 import UIMenuDynamicListItem from './items/UIMenuDynamicListItem';
 let menuPool = [];
+
 export default class NativeUI {
     constructor(title, subtitle, offset, spriteLibrary, spriteName) {
         this._visible = true;
@@ -106,7 +107,15 @@ export default class NativeUI {
         this._descriptionText.Wrap = 400;
         this._background = new Sprite("commonmenu", "gradient_bgd", new Point(this._offset.X, 144 + this._offset.Y - 37 + this._extraOffset), new Size(290, 25));
         this._visible = false;
+        this._handlers = {}
         setTick(this.render.bind(this));
+    }
+    On(eventName, handler) {
+        this._handlers[eventName] = handler
+    }
+    Emit(eventName, ...data) {
+        const handler = this._handlers[eventName]
+        if(handler) handler(...data)
     }
     GetSpriteBanner() {
         return this._bannerSprite;

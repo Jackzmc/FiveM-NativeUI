@@ -10,6 +10,11 @@ import Point from "../utils/Point";
 import Size from "../utils/Size";
 import UUIDV4 from "../utils/UUIDV4";
 
+export type ItemEvents = {
+    select: () => void,
+    hovered: (active: boolean) => void,
+}
+
 export default class UIMenuItem {
     public readonly Id: string = UUIDV4();
 
@@ -19,6 +24,7 @@ export default class UIMenuItem {
     public static readonly DefaultHighlightedForeColor: Color = Color.Black;
 
     private _event: { event: string; args: any[] };
+    protected _handlers: Record<string, Function> = {}
 
     protected _rectangle: ResRectangle;
     protected _text: ResText;
@@ -76,6 +82,22 @@ export default class UIMenuItem {
         this._badgeRight = new Sprite("commonmenu", "", new Point(0, 0), new Size(40, 40));
 
         this._labelText = new ResText("", new Point(0, 0), 0.35, Color.White, 0, Alignment.Right);
+    }
+
+    public On<E extends keyof ItemEvents>( eventName: E, handler: ItemEvents[E] ) {
+        this._handlers[eventName] = handler
+        return this
+    }
+
+    public Off<E extends keyof ItemEvents>( eventName: E ) {
+        delete this._handlers[eventName]
+        return this
+    }
+
+    public Emit<E extends keyof ItemEvents>( eventName: E, ...args: Parameters<ItemEvents[E]> ) {
+        const handler = this._handlers[eventName]
+        if ( handler ) handler( ...args )
+        return this
     }
 
     public SetVerticalPosition(y: number) {

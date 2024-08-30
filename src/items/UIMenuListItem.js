@@ -24,6 +24,7 @@ export default class UIMenuListItem extends UIMenuItem {
         this._arrowRight = new Sprite("commonmenu", "arrowright", new Point(280, 105 + y), new Size(30, 30));
         this._itemText = new ResText("", new Point(290, y + 104), 0.35, Color.White, Font.ChaletLondon, Alignment.Right);
     }
+    
     get Collection() {
         return this._itemsCollection;
     }

@@ -27,6 +27,7 @@ export default class UIMenuItem {
         this._badgeLeft = new Sprite("commonmenu", "", new Point(0, 0), new Size(40, 40));
         this._badgeRight = new Sprite("commonmenu", "", new Point(0, 0), new Size(40, 40));
         this._labelText = new ResText("", new Point(0, 0), 0.35, Color.White, 0, Alignment.Right);
+        this.Parent = null;
     }
     get Text() {
         return this._text.Caption;
