@@ -9,7 +9,7 @@ import Color from "../utils/Color";
 import Point from "../utils/Point";
 import Size from "../utils/Size";
 import UUIDV4 from "../utils/UUIDV4";
-import ChangeDirection from '../../dist/nativeui/enums/ChangeDirection';
+import ChangeDirection from '../enums/ChangeDirection';
 
 export type ItemEvents = {
     // When the menu item is selected
