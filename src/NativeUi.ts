@@ -26,6 +26,8 @@ import Scaleform from './utils/Scaleform';
 import BigMessage from './modules/BigMessage';
 import MidsizedMessage from './modules/MidsizedMessage';
 import UIMenuDynamicListItem from './items/UIMenuDynamicListItem';
+import UIMenuTextInputItem from "./items/UIMenuTextInputItem.js";
+import { getTextInput } from "./utils/TextInput.js";
 
 let menuPool: NativeUI[] = [];
 
@@ -542,11 +544,17 @@ export default class NativeUI {
             return;
         }
 
-        const it = <UIMenuCheckboxItem>this.MenuItems[this.CurrentSelection];
-        if (this.MenuItems[this.CurrentSelection] instanceof UIMenuCheckboxItem) {
+        let it = this.MenuItems[this.CurrentSelection];
+        if ( it instanceof UIMenuCheckboxItem ) {
             it.Checked = !it.Checked;
             Common.PlaySound(this.AUDIO_SELECT, this.AUDIO_LIBRARY);
             this.Emit("checkboxChange", it, it.Checked)
+        } if ( it instanceof UIMenuTextInputItem ) {
+            getTextInput( it.MaxLength ).then( text => {
+                it.Text = text
+                it.Emit( "input", text )
+            })
+            Common.PlaySound( this.AUDIO_SELECT, this.AUDIO_LIBRARY );
         } else {
             Common.PlaySound(this.AUDIO_SELECT, this.AUDIO_LIBRARY);
             this.Emit( "select", it, this.CurrentSelection )
@@ -558,7 +566,6 @@ export default class NativeUI {
                 this.Emit("menuChange", subMenu, true)
             }
         }
-        it.fireEvent();
     }
     
     public HasCurrentSelectionChildren() {
@@ -635,7 +642,6 @@ export default class NativeUI {
                                 case 1:
                                     Common.PlaySound(this.AUDIO_SELECT, this.AUDIO_LIBRARY);
                                     //this.MenuItems[i].ItemActivate(this);
-                                    this.MenuItems[i].fireEvent();
                                     this.Emit("select", this.MenuItems[i], i)
                                     break;
                                 case 2:
@@ -1004,6 +1010,7 @@ export {
     NativeUI as Menu,
     UIMenuItem,
     UIMenuListItem,
+    UIMenuTextInputItem,
     UIMenuAutoListItem,
     UIMenuDynamicListItem,
     UIMenuCheckboxItem,

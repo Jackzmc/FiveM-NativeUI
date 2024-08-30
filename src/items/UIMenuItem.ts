@@ -12,7 +12,8 @@ import UUIDV4 from "../utils/UUIDV4";
 
 export type ItemEvents = {
     select: () => void,
-    hovered: (active: boolean) => void,
+    hovered: ( active: boolean ) => void,
+    input: ( text: string ) => void,
 }
 
 export default class UIMenuItem {
@@ -23,7 +24,6 @@ export default class UIMenuItem {
     public static readonly DefaultForeColor: Color = Color.WhiteSmoke;
     public static readonly DefaultHighlightedForeColor: Color = Color.Black;
 
-    private _event: { event: string; args: any[] };
     protected _handlers: Record<string, Function> = {}
 
     protected _rectangle: ResRectangle;
@@ -109,16 +109,6 @@ export default class UIMenuItem {
         this._badgeRight.Pos = new Point(385 + this.Offset.X, y + 142 + this.Offset.Y);
 
         this._labelText.Pos = new Point(420 + this.Offset.X, y + 148 + this.Offset.Y);
-    }
-
-    public addEvent(event: string, ...args: any[]) {
-        this._event = { event: event, args: args };
-    }
-
-    public fireEvent() {
-        if (this._event) {
-            //alt.emit(this._event.event, ...this._event.args);
-        }
     }
 
     public Draw() {
