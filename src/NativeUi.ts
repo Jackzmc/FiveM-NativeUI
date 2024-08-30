@@ -17,7 +17,6 @@ import ResText from "./modules/ResText";
 import Sprite from "./modules/Sprite";
 import Color from "./utils/Color";
 import Common from "./utils/Common";
-import LiteEvent from "./utils/LiteEvent";
 import Point from "./utils/Point";
 import Size from "./utils/Size";
 import UUIDV4 from "./utils/UUIDV4";
@@ -107,19 +106,6 @@ export default class NativeUI {
 
     public MenuItems: (UIMenuItem)[] = [];
 
-    // Events
-    public readonly IndexChange = new LiteEvent();
-    public readonly ListChange = new LiteEvent();
-    public readonly AutoListChange = new LiteEvent();
-    public readonly DynamicListChange = new LiteEvent();
-    public readonly SliderChange = new LiteEvent();
-    //public readonly SliderSelect = new LiteEvent();
-    public readonly CheckboxChange = new LiteEvent();
-    public readonly ItemSelect = new LiteEvent();
-    public readonly MenuOpen = new LiteEvent();
-    public readonly MenuClose = new LiteEvent();
-    public readonly MenuChange = new LiteEvent();
-
     public On<E extends keyof MenuEvents>( eventName: E, handler: MenuEvents[E] ) {
         this._handlers[eventName] = handler
         return this
@@ -196,7 +182,6 @@ export default class NativeUI {
         }
         if (toggle) {
             this._justOpened = true;
-            this.MenuOpen.emit();
             this.Emit("open")
 
             if (this.ParentMenu === null) {
@@ -250,7 +235,6 @@ export default class NativeUI {
             this._maxItem = this._maxItemsOnScreen + this.CurrentSelection;
             this._minItem = this.CurrentSelection;
         }
-        this.IndexChange.emit( this.CurrentSelection, this.MenuItems[this._activeItem % this.MenuItems.length] );
         this.Emit( "indexChange", this.CurrentSelection, this.MenuItems[this._activeItem % this.MenuItems.length] );
         this.UpdateDescriptionCaption();
     }
@@ -460,7 +444,6 @@ export default class NativeUI {
     public Close(closeChildren: boolean = false) {
         this.Visible = false;
         this.CleanUp(closeChildren);
-        this.MenuClose.emit( true );
         this.Emit("close", true)
     }
 
@@ -477,7 +460,6 @@ export default class NativeUI {
             if (it.Collection.length == 0) return;
             it.Index--;
             Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
-            this.ListChange.emit( it, it.Index );
             this.Emit("listChange", it, it.Index)
             this.UpdateDescriptionCaption();
         }
@@ -489,7 +471,6 @@ export default class NativeUI {
                 it.SelectedValue -= it.LeftMoveThreshold;
             }
             Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
-            this.AutoListChange.emit( it, it.SelectedValue, ChangeDirection.Left );
             this.Emit("autoListChange", it, it.SelectedValue, ChangeDirection.Left)
             this.UpdateDescriptionCaption();
         }
@@ -497,7 +478,6 @@ export default class NativeUI {
             const it = <UIMenuDynamicListItem>this.MenuItems[this.CurrentSelection];
             it.SelectionChangeHandlerPromise(it, it.SelectedValue, ChangeDirection.Left).then((newSelectedValue: string) => {
                 it.SelectedValue = newSelectedValue;
-                this.DynamicListChange.emit( it, it.SelectedValue, ChangeDirection.Left );
                 this.Emit("dynamicListChange", it, it.SelectedValue, ChangeDirection.Left)
             });
             Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
@@ -507,7 +487,6 @@ export default class NativeUI {
             const it = <UIMenuSliderItem>this.MenuItems[this.CurrentSelection];
             it.Index = it.Index - 1;
             Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
-            this.SliderChange.emit( it, it.Index, it.IndexToItem( it.Index ) );
             this.Emit("sliderChange", it, it.Index, it.IndexToItem(it.Index))
             this.UpdateDescriptionCaption();
         }
@@ -525,7 +504,6 @@ export default class NativeUI {
             if (it.Collection.length == 0) return;
             it.Index++;
             Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
-            this.ListChange.emit( it, it.Index );
             this.Emit("listChange", it, it.Index)
             this.UpdateDescriptionCaption();
         }
@@ -537,7 +515,6 @@ export default class NativeUI {
                 it.SelectedValue += it.RightMoveThreshold;
             }
             Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
-            this.AutoListChange.emit( it, it.SelectedValue, ChangeDirection.Right );
             this.Emit( "autoListChange", it, it.SelectedValue, ChangeDirection.Right );
             this.UpdateDescriptionCaption();
         }
@@ -545,7 +522,6 @@ export default class NativeUI {
             const it = <UIMenuDynamicListItem>this.MenuItems[this.CurrentSelection];
             it.SelectionChangeHandlerPromise(it, it.SelectedValue, ChangeDirection.Right).then((newSelectedValue: string) => {
                 it.SelectedValue = newSelectedValue;
-                this.DynamicListChange.emit( it, it.SelectedValue, ChangeDirection.Right );
                 this.Emit( "dynamicListChange", it, it.SelectedValue, ChangeDirection.Right );
             });
             Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
@@ -555,7 +531,6 @@ export default class NativeUI {
             const it = <UIMenuSliderItem>this.MenuItems[this.CurrentSelection];
             it.Index++;
             Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
-            this.SliderChange.emit( it, it.Index, it.IndexToItem( it.Index ) );
             this.Emit( "sliderChange", it, it.Index, it.IndexToItem( it.Index ) )
             this.UpdateDescriptionCaption();
         }
@@ -571,18 +546,15 @@ export default class NativeUI {
         if (this.MenuItems[this.CurrentSelection] instanceof UIMenuCheckboxItem) {
             it.Checked = !it.Checked;
             Common.PlaySound(this.AUDIO_SELECT, this.AUDIO_LIBRARY);
-            this.CheckboxChange.emit( it, it.Checked );
             this.Emit("checkboxChange", it, it.Checked)
         } else {
             Common.PlaySound(this.AUDIO_SELECT, this.AUDIO_LIBRARY);
-            this.ItemSelect.emit( it, this.CurrentSelection );
             this.Emit( "select", it, this.CurrentSelection )
             it.Emit("select")
             if (this.Children.has(it.Id)) {
                 const subMenu = this.Children.get(it.Id);
                 this.Visible = false;
                 subMenu.Visible = true;
-                this.MenuChange.emit( subMenu, true );
                 this.Emit("menuChange", subMenu, true)
             }
         }
@@ -664,7 +636,6 @@ export default class NativeUI {
                                     Common.PlaySound(this.AUDIO_SELECT, this.AUDIO_LIBRARY);
                                     //this.MenuItems[i].ItemActivate(this);
                                     this.MenuItems[i].fireEvent();
-                                    this.ItemSelect.emit(this.MenuItems[i], i);
                                     this.Emit("select", this.MenuItems[i], i)
                                     break;
                                 case 2:
@@ -672,7 +643,6 @@ export default class NativeUI {
                                     if ((it.Collection == null ? it.Items.Count : it.Collection.Count) > 0) {
                                         it.Index++;
                                         Common.PlaySound(this.AUDIO_LEFTRIGHT, this.AUDIO_LIBRARY);
-                                        this.ListChange.emit( it, it.Index );
                                         this.Emit("listChange", it, it.Index)
                                     }
                                     break;
@@ -682,7 +652,6 @@ export default class NativeUI {
                     } else if (!uiMenuItem.Selected) {
                         this.CurrentSelection = i;
                         Common.PlaySound(this.AUDIO_UPDOWN, this.AUDIO_LIBRARY);
-                        this.IndexChange.emit( this.CurrentSelection, this.MenuItems[this._activeItem % this.MenuItems.length] );
                         this.Emit( "indexChange", this.CurrentSelection, this.MenuItems[this._activeItem % this.MenuItems.length] )
                         this.SelectItem();
                         this.UpdateDescriptionCaption();
@@ -796,7 +765,6 @@ export default class NativeUI {
             this.MenuItems[this._activeItem % this.MenuItems.length].Selected = true;
         }
         Common.PlaySound(this.AUDIO_UPDOWN, this.AUDIO_LIBRARY);
-        this.IndexChange.emit( this.CurrentSelection, this.MenuItems[this._activeItem % this.MenuItems.length] );
         this.Emit( "indexChange", this.CurrentSelection, this.MenuItems[this._activeItem % this.MenuItems.length] )
         this.UpdateDescriptionCaption();
     }
@@ -809,7 +777,6 @@ export default class NativeUI {
         this._activeItem--;
         this.MenuItems[this._activeItem % this.MenuItems.length].Selected = true;
         Common.PlaySound(this.AUDIO_UPDOWN, this.AUDIO_LIBRARY);
-        this.IndexChange.emit( this.CurrentSelection, this.MenuItems[this._activeItem % this.MenuItems.length] );
         this.Emit( "indexChange", this.CurrentSelection, this.MenuItems[this._activeItem % this.MenuItems.length] )
         this.UpdateDescriptionCaption();
     }
@@ -838,7 +805,6 @@ export default class NativeUI {
             this.MenuItems[this._activeItem % this.MenuItems.length].Selected = true;
         }
         Common.PlaySound(this.AUDIO_UPDOWN, this.AUDIO_LIBRARY);
-        this.IndexChange.emit( this.CurrentSelection, this.MenuItems[this._activeItem % this.MenuItems.length] );
         this.Emit( "indexChange", this.CurrentSelection, this.MenuItems[this._activeItem % this.MenuItems.length] );
         this.UpdateDescriptionCaption();
     }
@@ -852,7 +818,6 @@ export default class NativeUI {
         const activeItem = this.MenuItems[this._activeItem % this.MenuItems.length]
         activeItem.Selected = true;
         Common.PlaySound(this.AUDIO_UPDOWN, this.AUDIO_LIBRARY);
-        this.IndexChange.emit( this.CurrentSelection, this.MenuItems[this._activeItem % this.MenuItems.length] );
         this.Emit( "indexChange", this.CurrentSelection, activeItem );
         prevItem.Emit("hovered", false)
         activeItem.Emit("hovered", true)
@@ -863,14 +828,11 @@ export default class NativeUI {
         if (this.ParentMenu != null) {
             this.Visible = false;
             this.ParentMenu.Visible = true;
-            this.MenuChange.emit( this.ParentMenu, false );
-            this.MenuClose.emit( false );
             this.Emit( "menuChange", this.ParentMenu, false )
             this.Emit( "close", false)
         } else if (this.CloseableByUser) {
             this.Visible = false;
             this.CleanUp(true);
-            this.MenuClose.emit( false );
             this.Emit( "close", false )
         }
     }
